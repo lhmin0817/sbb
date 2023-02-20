@@ -1,0 +1,106 @@
+실습 : 
+	- 새로운 프로젝트 생성 후 서버 포트 변셩
+	- @Controller 어너테이션을 사용해서 @GetMapping("/hello")요청 시 메소드 출력 @ResponseBody
+	- Lombok의 어노테이션 사용.
+		- @Getter, @Setter, @toString, @noArgContructor, @allArgContructor,
+		- @RequredArfContructor 사용
+	- devTools를 사용해서 수정 시 자동 반영
+	
+===================================================================================
+JPA 사용을 위한 환경 구성
+1. H2 DateBase : 테스트 환경에서 많이 사용 => Oracle (서비스 환경)
+	- 라이브러리 추가 build.gradle 
+		runtimeOnly 'com.h2database:h2'
+	- DB 연결 설정 : application.properties
+		# H2 DateBase 연결 설정
+			spring.h2.console.enabled=true
+			spring.h2.console.path=/h2-console
+			spring.datasource.url=jdbc:h2:~/local
+			spring.datasource.driverClassName=org.h2.Driverspring.datasource.username=sa
+			spring.datasource.password=
+	
+	- H2 DateBase 파일을 생성 : ~ : 로그온한 계정의 홈폴더 (c:\users\hi)
+		~/local.mv.db		<= H2 DateBase의 DataBase 파일
+		cd ~
+		touch local.mv.db
+		
+	- H2 DateBase 접속 : 프로젝트 시작 
+		크롬 URL : http://localhost:9898/h2-console
+		
+2. JPA 환경 설정 
+	- 의존성 라이브러리 추가 : build.gradle
+		implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	
+	- JPA 설정 : application.properties
+		#JPA (JPA는 H2 DB와 연결 설정, 변경사항만 업데이트)
+		spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.H2Dialect
+		spring.jpa.hibernate.ddl-auto=update	# 주의 요함 : 운영환경에서는 none, validate
+			# none : 엔티티(java DTO 객체)가 변경이 되어도 데이터베이스를 변경하지 않도록 설정
+			# update : 엔티티 변경된 부분만 실제 데이터베이스에 적용됨
+			# validate : 변경사항이 있는 지 확인만 함
+			# create : Spring Boot가 작동될 때 DB의 테이블을 Drop하고 다시 생성
+			# create-drop : create와 동일 하지만 Spring Boot 종료 시 table drop
+			
+3. 엔티티 클래스 작성 : @Entity 어노테이션이 붙은 자바 클래스 
+	엔티티 : 데이터베이스 테이블과 매핑된는 자바클래스  <== DTO 의 클래스명이 테이블명과 매핑, 
+		DTO의 필드명은 테이블의 컬럼명과 매핑 
+		
+		-- Question.java
+		-- Answer.java
+		
+JPA의 장점 : DB의 테이블 컬럼이 수정, 생성, 삭제가 빈번하게 발생 시 유지 보수를 아주 쉽게 할 수 있다.
+	- JPA를 사용하지 않는 경우 DB의 테이블이 수정 발생 시 DTO, DAO(insert, update, delete, get, getList)를 전부 수정해야함
+	- 단점 : 테이블이 복잡한 조인으로 연결된 경우나, 복잡한 계산을 처리하는 환경에서는 적합하지 않는다.
+		(MyBatis : 유지 보수도 쉽게하고 복잡한 계산처리도 가능)
+	
+3. 레포지토리(Repository) : DAO - Java class 의 메소드를 사용해서 SQL의 CRUD(Insert, update, delete, select)
+	- JPA를 사용해서 DB를 CRUD 할려면 Repository 인터페이스를 생성해야 한다.
+	- JPARepository 상속해서 만들어야 한다. 
+	
+
+	=====================================================================================================
+	
+	실습 sbb2 프로젯트에서 진행 H2 DateBase를 사용
+		JPA Entity 클래스 실습 ,JPA메소드를 사용해서 CRUD, save(), findAll()
+		
+	아래 내용의 JPA Entity 클래스를 생성
+	테이블 명 : user
+		
+		idx primaty key, 자동증가 (1,1)
+		name varchar(100)
+		pass varchar(100)
+		email varchar(200)
+		regdate LoacalDateTime
+		cnt int
+		
+	-- 임의의 값을 5개 insert
+	-- 넣은 값을 regdate 컬럼을 기준으로 내림차순 (desc) 정렬
+	-- idx 3 번의 name과 email 주소를 수정
+	-- idx 4 번의 값을 삭제
+	
+	======================================================================================================
+	
+	실습 sbb2 : <Controller> <Service> <Repository>
+	테이블 명 : users	<==user는 예약어
+		idx primary key 자동증가(1,1)
+		name varchar(100)
+		pass varchar(100)
+		email varchar(200)
+		regdate LoacalDateTime
+		cnt int
+		
+	users테이블에 : 1000개의 더미값 입력
+		name : "이름 - " + 숫자
+		pass : "pass1"
+		email : "메일주소 - " + 숫자
+		regdate : 현재날짜
+		cnt : 번호
+		
+	client 요청 : http://localhost:0000/user_detail/1
+	view page : users_detail.html
+	
+	view page : user_insert.html
+	client 요청 : http://localhost:0000/user_insert
+	
+	sbb2 프로잭트 폴더 압축 : 조면_이름.zip
+	업로드 UTL : http://url.kr/u86s1c
